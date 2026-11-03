@@ -10,7 +10,7 @@
   --mousse: #4f5b22;
   --sauge: #c6d09c;
   --etoile: #e9bd4c;
-  --ocre: #d8a75f;
+  --vacances: #2f5a2c;
   --focus: #4f5b22;
   --ombre: 0 12px 30px -16px rgba(15, 18, 3, .55);
   --rayon: 22px;
@@ -20,12 +20,12 @@
 }
 :root[data-theme='nuit'] {
   --nuage: #2b3019; --jour: #363c21; --weekend: #30361c; --trait: #4a5030;
-  --encre: #f5efdd; --doux: #bcb89c; --mousse: #6b7a35; --sauge: #55603a; --focus: #e9bd4c;
+  --encre: #f5efdd; --doux: #bcb89c; --mousse: #6b7a35; --sauge: #55603a; --focus: #e9bd4c; --vacances: #7fa35a;
   color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
 body { margin: 0; min-height: 100dvh; background: var(--velours); color: var(--encre); font: 400 16px/1.45 var(--corps); }
 /* Le fond ne defile pas : l'image et son miroir, repetes, pour rester nets et sans raccord sur grand ecran. */
 body::before { content: ''; position: fixed; inset: 0 0 auto 0; z-index: -1; height: 100vh; background: url('fond-libellules.jpg') repeat-x left top / auto 100%; }
@@ -198,11 +198,11 @@ h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
 }
 
 /* Les vacances : un fin liseré au pied du jour */
-.case.vacances::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--ocre); }
+.case.vacances::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--vacances); }
 .pilules { display: flex; flex-wrap: wrap; gap: 6px; }
 .pilules:has(p:not([hidden])) { margin-top: 8px; }
 .pilules .ferie-nom { margin: 0; }
-.vacances-nom { margin: 0; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--ocre) 30%, var(--nuage)); font-size: .85rem; }
+.vacances-nom { margin: 0; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--vacances) 22%, var(--nuage)); font-size: .85rem; }
 
 /* La phrase, ecrite ou dictee */
 .rapide { padding: 12px; }
@@ -216,6 +216,12 @@ h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
 .envoi { background: var(--mousse); color: #fff; font: 700 1.4rem var(--titre); }
 .aide-rapide { margin: 6px 2px 0; color: var(--doux); font-size: .82rem; }
 .taches small { color: var(--doux); font-size: .78rem; white-space: nowrap; }
+
+/* Le code */
+.code { width: 100%; min-height: 54px; padding: 8px 12px; border: 2px solid var(--trait); border-radius: 14px; background: var(--jour); text-align: center; font: 700 1.5rem var(--titre); letter-spacing: .3em; }
+.code-erreur { margin: 8px 0 0; color: #a3341f; font-size: .92rem; }
+:root[data-theme='nuit'] .code-erreur { color: #f0a58f; }
+.fenetre form .fenetre-actions { margin-top: 12px; }
 
 /* La recherche */
 .recherche { width: 100%; min-height: 46px; padding: 8px 12px; border: 2px solid var(--trait); border-radius: 12px; background: var(--jour); }

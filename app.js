@@ -1,4 +1,4 @@
-// Lux — un petit calendrier. Tout reste dans ce navigateur (localStorage) ; seuls les rappels a venir partent au serveur.
+// Lux — un petit calendrier. Tout marche d'abord dans le navigateur, sans attendre ; une copie part ensuite au serveur, derriere le code.
 (function () {
   'use strict';
   var $ = function (s, c) { return (c || document).querySelector(s); };
@@ -49,15 +49,42 @@
 
   /* ---------- les donnees ---------- */
   var CLE = 'calendrierlux-v1';
-  var donnees = { evenements: [], taches: {} };
+  var donnees = { evenements: [], taches: {}, supprimes: {} };
   var memoireOk = true;
   try {
     var lu = JSON.parse(localStorage.getItem(CLE) || 'null');
-    if (lu && Array.isArray(lu.evenements)) donnees = { evenements: lu.evenements, taches: lu.taches || {} };
+    if (lu && Array.isArray(lu.evenements)) donnees = { evenements: lu.evenements, taches: lu.taches || {}, supprimes: lu.supprimes || {} };
   } catch (e) { memoireOk = false; }
-  function garder() {
+  function ecrireMemoire() {
     try { localStorage.setItem(CLE, JSON.stringify(donnees)); }
     catch (e) { toast('Enregistrement impossible : ce navigateur bloque la mémoire.'); }
+  }
+  // L'empreinte de chaque element : comparer suffit a savoir ce qui a change, sans y penser a chaque geste.
+  function aplatir() {
+    var m = {};
+    donnees.evenements.forEach(function (e) { m[e.id] = { o: e, j: '' }; });
+    Object.keys(donnees.taches).forEach(function (j) { donnees.taches[j].forEach(function (t) { m[t.id] = { o: t, j: j }; }); });
+    return m;
+  }
+  var empreinte = function (x) { var c = Object.assign({}, x.o); delete c.maj; return JSON.stringify(c) + x.j; };
+  var empreintes = {};
+  function photographier() {
+    var m = aplatir();
+    empreintes = {};
+    Object.keys(m).forEach(function (id) { empreintes[id] = empreinte(m[id]); });
+  }
+  photographier();
+  var versionLocale = 0;
+  function garder() {
+    var m = aplatir(), now = Date.now();
+    Object.keys(m).forEach(function (id) {
+      if (empreintes[id] !== empreinte(m[id])) { m[id].o.maj = now; delete donnees.supprimes[id]; }
+    });
+    Object.keys(empreintes).forEach(function (id) { if (!m[id]) donnees.supprimes[id] = now; });
+    photographier();
+    ecrireMemoire();
+    versionLocale++;
+    prevoirSauvegarde();
   }
   var nouvelId = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); };
 
@@ -400,7 +427,7 @@
     garder(); choisi = date; tout(false);
     var resume = r.sticker + ' ' + r.titre + ', ' + dateLongue(date) + (r.heure ? ' à ' + heureDite(r.heure) : '');
     if (r.rappel !== '' && !rappelsOn()) toast(resume, 'Activer les rappels', activerRappels);
-    else { toast(resume, 'Modifier', function () { ouvrirEvenement(ev); }); prevoirSynchro(); }
+    else { toast(resume, 'Modifier', function () { ouvrirEvenement(donnees.evenements.filter(function (x) { return x.id === ev.id; })[0]); }); prevoirSynchro(); }
   }
   rapide.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -581,7 +608,12 @@
   }
   function appeler(corps) {
     return fetch(URL_RAPPELS, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corps) })
-      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.refus || 'Serveur indisponible.'); return j; }); });
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok) { var e = new Error(j.refus || 'Serveur indisponible.'); e.statut = r.status; throw e; }
+          return j;
+        });
+      });
   }
   function synchroniser(strict) {
     if (!rappelsOn()) return Promise.resolve();
@@ -638,6 +670,78 @@
     dessinerRappels(); toast('Rappels coupés');
   });
 
+  /* ---------- la sauvegarde : un code, et le calendrier suit partout ---------- */
+  // Rien n'attend le serveur : on travaille sur la copie locale, et le serveur fusionne les copies sans en ecraser aucune.
+  var fenetreCode = $('[data-fenetre-code]'), formCode = $('[data-code-form]'), erreurCode = $('[data-code-erreur]');
+  var enCours = false, encore = false, sauvegardeT, derniere = 0;
+  function prevoirSauvegarde() {
+    if (!lire('lux-jeton')) return;
+    ecrire('lux-sale', 'oui');
+    clearTimeout(sauvegardeT);
+    sauvegardeT = setTimeout(sauver, 600);
+  }
+  function sauver() {
+    var jeton = lire('lux-jeton');
+    if (!jeton) return Promise.resolve();
+    if (enCours) { encore = true; return Promise.resolve(); }
+    enCours = true;
+    var v = versionLocale;
+    return appeler({ action: 'calendrier', jeton: jeton, donnees: donnees }).then(function (r) {
+      derniere = Date.now();
+      if (v !== versionLocale) { encore = true; return; } // Modifie pendant l'envoi : on renvoie.
+      if (fenetre.open) { clearTimeout(sauvegardeT); sauvegardeT = setTimeout(sauver, 3000); return; } // Ne rien changer sous les doigts.
+      ecrire('lux-sale', null);
+      ecrire('lux-sauve-a', String(derniere));
+      appliquer(r.donnees);
+    }).catch(function (e) {
+      if (e && e.statut === 401) { ecrire('lux-jeton', null); ouvrirCode(); }
+    }).then(function () {
+      enCours = false;
+      if (encore) { encore = false; sauver(); }
+    });
+  }
+  function appliquer(d) {
+    if (!d || !Array.isArray(d.evenements) || JSON.stringify(d) === JSON.stringify(donnees)) return;
+    donnees = { evenements: d.evenements, taches: d.taches || {}, supprimes: d.supprimes || {} };
+    photographier();
+    ecrireMemoire();
+    reporterTaches();
+    tout(false);
+    prevoirSynchro();
+  }
+  function ouvrirCode() {
+    if (fenetreCode.open) return;
+    formCode.reset(); erreurCode.hidden = true;
+    fenetreCode.showModal();
+    formCode.code.focus();
+  }
+  function connecter() {
+    var code = formCode.code.value.replace(/\D/g, '');
+    if (!code || formCode.dataset.envoi) return;
+    formCode.dataset.envoi = '1'; erreurCode.hidden = true;
+    appeler({ action: 'connexion', code: code }).then(function (r) {
+      ecrire('lux-jeton', r.jeton);
+      fenetreCode.close();
+      return sauver().then(function () { toast('Calendrier sauvegardé : ' + donnees.evenements.length + ' événement' + (donnees.evenements.length > 1 ? 's' : '') + ' retrouvé' + (donnees.evenements.length > 1 ? 's' : '')); });
+    }).catch(function (e) {
+      erreurCode.textContent = e instanceof TypeError ? 'Le serveur ne répond pas. Vérifiez internet.' : e.message;
+      erreurCode.hidden = false;
+      formCode.code.value = ''; formCode.code.focus();
+    }).then(function () { delete formCode.dataset.envoi; dessinerCompte(); });
+  }
+  formCode.addEventListener('submit', function (e) { e.preventDefault(); connecter(); });
+  // Le huitieme chiffre suffit : pas de bouton a chercher.
+  formCode.code.addEventListener('input', function () { if (formCode.code.value.replace(/\D/g, '').length === 8) connecter(); });
+  function dessinerCompte() {
+    var co = !!lire('lux-jeton'), a = +lire('lux-sauve-a'), d = a ? new Date(a) : null;
+    $('[data-compte-connecter]').hidden = co;
+    $('[data-compte-etat]').textContent = !co ? 'Avec votre code, le calendrier est gardé même si vous supprimez l’appli, et il vous suit sur vos autres appareils.'
+      : lire('lux-sale') ? 'Connecté. Des changements attendent internet pour partir.'
+        : d ? 'Connecté. Sauvegardé à ' + heureDite(deux(d.getHours()) + ':' + deux(d.getMinutes())) + (isoDe(d) === aujourdhui() ? '' : ' le ' + d.getDate() + ' ' + MOIS[d.getMonth()]) + '.' : 'Connecté.';
+  }
+  $('[data-compte-connecter]').addEventListener('click', function () { fenetrePlus.close(); ouvrirCode(); });
+  window.addEventListener('online', function () { if (lire('lux-sale')) sauver(); });
+
   /* ---------- les options ---------- */
   var boutonTheme = $('[data-theme-bouton]');
   function dessinerTheme() { boutonTheme.textContent = document.documentElement.getAttribute('data-theme') === 'nuit' ? 'Revenir en crème' : 'Passer en mode nuit'; }
@@ -654,7 +758,7 @@
 
   /* ---------- sauvegarde, restauration, autres agendas ---------- */
   var fenetrePlus = $('[data-fenetre-plus]');
-  $('[data-plus]').addEventListener('click', function () { dessinerRappels(); dessinerTheme(); fenetrePlus.showModal(); });
+  $('[data-plus]').addEventListener('click', function () { dessinerCompte(); dessinerRappels(); dessinerTheme(); fenetrePlus.showModal(); });
   function telecharger(nom, contenu, type) {
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([contenu], { type: type }));
@@ -663,7 +767,7 @@
   }
   $('[data-sauvegarder]').addEventListener('click', function () {
     telecharger('calendrier-lux-' + aujourdhui() + '.json', JSON.stringify(donnees, null, 1), 'application/json');
-    toast('Sauvegarde téléchargée');
+    toast('Copie téléchargée');
   });
   $('[data-restaurer]').addEventListener('change', function (e) {
     var f = e.target.files[0]; if (!f) return;
@@ -671,10 +775,10 @@
       var d = JSON.parse(t);
       if (!d || !Array.isArray(d.evenements)) throw new Error();
       var propre = d.evenements.filter(function (ev) { return ev && ev.id && ev.titre && /^\d{4}-\d{2}-\d{2}$/.test(ev.date); });
-      if (!window.confirm('Remplacer ce calendrier par cette sauvegarde (' + propre.length + ' événements) ?')) return;
-      donnees = { evenements: propre, taches: d.taches && typeof d.taches === 'object' ? d.taches : {} };
-      reporterTaches(); garder(); fenetrePlus.close(); tout(false); toast('Sauvegarde restaurée'); prevoirSynchro();
-    }).catch(function () { toast('Ce fichier n’est pas une sauvegarde de Lux.'); })
+      if (!window.confirm('Remplacer ce calendrier par cette copie (' + propre.length + ' événements) ?')) return;
+      donnees = { evenements: propre, taches: d.taches && typeof d.taches === 'object' ? d.taches : {}, supprimes: donnees.supprimes };
+      reporterTaches(); garder(); fenetrePlus.close(); tout(false); toast('Copie restaurée'); prevoirSynchro();
+    }).catch(function () { toast('Ce fichier n’est pas une copie de Lux.'); })
       .then(function () { e.target.value = ''; });
   });
   $('[data-ics]').addEventListener('click', function () {
@@ -723,7 +827,10 @@
   // Ouvert toute la nuit : au reveil, le calendrier revient sur le nouveau jour.
   var jourOuvert = aujourdhui();
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden || jourOuvert === aujourdhui()) return;
+    if (document.hidden) return;
+    // De retour sur l'appli : on recupere ce qui a change ailleurs, sans jamais interroger en boucle.
+    if (Date.now() - derniere > 15000) sauver();
+    if (jourOuvert === aujourdhui()) return;
     jourOuvert = aujourdhui(); reporterTaches(); choisi = jourOuvert; tout(false);
     synchroniser();
   });
@@ -737,4 +844,5 @@
   if (!memoireOk) toast('Ce navigateur bloque la mémoire : rien ne sera gardé.');
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
   if (rappelsOn() && lire('lux-rappels-jour') !== aujourdhui()) synchroniser();
+  if (lire('lux-jeton')) sauver(); else if (memoireOk) ouvrirCode();
 })();

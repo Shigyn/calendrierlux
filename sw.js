@@ -1,7 +1,7 @@
-// Lux : la derniere version quand il y a du reseau, sinon la copie gardee sur l'appareil. Et les rappels.
-const CACHE = 'lux-v4';
+// Lux : la copie gardee sur l'appareil tout de suite, pour une ouverture instantanee, et la mise a jour en coulisses. Et les rappels.
+const CACHE = 'lux-v5';
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=4', 'phrase.js?v=4', 'app.js?v=4', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=5', 'phrase.js?v=5', 'app.js?v=5', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', (e) => {
@@ -9,10 +9,17 @@ self.addEventListener('activate', (e) => {
 });
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(fetch(e.request).then((r) => {
-    if (r.ok && new URL(e.request.url).origin === location.origin) { const copie = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copie)); }
-    return r;
-  }).catch(() => caches.match(e.request).then((r) => r || caches.match('./'))));
+  const u = new URL(e.request.url);
+  const gardable = u.origin === location.origin || /(^|\.)(googleapis|gstatic)\.com$/.test(u.hostname);
+  if (!gardable) return;
+  e.respondWith(caches.match(e.request, { ignoreSearch: e.request.mode === 'navigate' }).then((garde) => {
+    const frais = fetch(e.request).then((r) => {
+      if (r.ok) { const copie = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copie)); }
+      return r;
+    }).catch(() => garde || caches.match('./'));
+    if (garde) { e.waitUntil(frais.catch(() => {})); return garde; }
+    return frais;
+  }));
 });
 
 self.addEventListener('push', (e) => {

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Varela+Round&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 <script>
   // Le theme avant l'affichage, pour ne pas clignoter.
   try { var t = localStorage.getItem('lux-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
@@ -138,8 +138,25 @@
   <div class="fenetre-actions"><button type="button" class="bouton-doux" data-fermer>Fermer</button></div>
 </dialog>
 
+<dialog class="fenetre" data-fenetre-code aria-labelledby="titre-code">
+  <form data-code-form>
+    <h2 id="titre-code">Votre code</h2>
+    <p class="aide">Votre calendrier est gardé et vous suit sur tous vos appareils. Ce qui est déjà sur celui-ci est conservé.</p>
+    <input class="code" name="code" type="password" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="Votre code">
+    <p class="code-erreur" role="alert" data-code-erreur hidden></p>
+    <div class="fenetre-actions">
+      <button type="submit" class="bouton-plein">Se connecter</button>
+      <button type="button" class="bouton-doux" data-fermer>Plus tard</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog class="fenetre" data-fenetre-plus aria-labelledby="titre-plus">
   <h2 id="titre-plus">Options et sauvegarde</h2>
+
+  <h3>Mon calendrier</h3>
+  <p class="aide" data-compte-etat></p>
+  <div class="liste-actions"><button type="button" class="bouton-doux" data-compte-connecter hidden>Entrer mon code</button></div>
 
   <h3>Rappels sur cet appareil</h3>
   <p class="aide" data-rappels-etat></p>
@@ -160,11 +177,10 @@
   </label>
   <div class="liste-actions"><button type="button" class="bouton-doux" data-theme-bouton>Passer en mode nuit</button></div>
 
-  <h3>Sauvegarde</h3>
-  <p class="aide">Votre calendrier reste sur cet appareil, dans ce navigateur. Sauvegardez-le de temps en temps pour ne rien perdre.</p>
+  <h3>Copie et export</h3>
   <div class="liste-actions">
-    <button type="button" class="bouton-doux" data-sauvegarder>Télécharger une sauvegarde</button>
-    <label class="bouton-doux bouton-fichier">Restaurer une sauvegarde<input type="file" accept="application/json,.json" data-restaurer></label>
+    <button type="button" class="bouton-doux" data-sauvegarder>Télécharger une copie</button>
+    <label class="bouton-doux bouton-fichier">Restaurer une copie<input type="file" accept="application/json,.json" data-restaurer></label>
     <button type="button" class="bouton-doux" data-ics>Exporter vers un autre agenda (.ics)</button>
     <button type="button" class="bouton-doux" data-imprimer>Imprimer</button>
   </div>
@@ -172,7 +188,7 @@
 </dialog>
 
 <div class="toast" role="status" aria-live="polite" data-toast></div>
-<script src="phrase.js?v=4" defer></script>
-<script src="app.js?v=4" defer></script>
+<script src="phrase.js?v=5" defer></script>
+<script src="app.js?v=5" defer></script>
 </body>
 </html>
