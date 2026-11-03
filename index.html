@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Varela+Round&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 <script>
   // Le theme avant l'affichage, pour ne pas clignoter.
   try { var t = localStorage.getItem('lux-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
@@ -23,32 +23,51 @@
 <div class="app">
   <header class="tete">
     <p class="marque"><span data-lux-petit></span>Lux</p>
+    <button type="button" class="decompte" data-decompte hidden></button>
     <div class="tete-actions">
-      <button type="button" class="bouton-doux" data-aujourdhui>Aujourd’hui</button>
-      <button type="button" class="bouton-rond" data-theme-bouton aria-label="Changer de thème" title="Changer de thème">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      <button type="button" class="bouton-rond" data-chercher aria-label="Chercher" title="Chercher">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M15.5 15.5L21 21" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>
       </button>
-      <button type="button" class="bouton-rond" data-plus aria-label="Sauvegarde et options" title="Sauvegarde et options">
+      <button type="button" class="bouton-doux" data-aujourdhui>Aujourd’hui</button>
+      <button type="button" class="bouton-rond" data-plus aria-label="Options et sauvegarde" title="Options et sauvegarde">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/></svg>
       </button>
     </div>
   </header>
 
   <main class="colonnes">
-    <section class="mois" aria-label="Le mois">
+    <section class="mois" data-mois aria-label="Le calendrier">
       <div class="mois-tete">
-        <button type="button" class="bouton-rond" data-mois-precedent aria-label="Mois précédent"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="bouton-rond" data-precedent aria-label="Précédent"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <h1 aria-live="polite"><span data-titre-mois></span> <small data-titre-annee></small></h1>
-        <button type="button" class="bouton-rond" data-mois-suivant aria-label="Mois suivant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="bouton-rond" data-suivant aria-label="Suivant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="vue-choix" role="group" aria-label="Affichage">
+        <button type="button" data-vue="mois">Mois</button>
+        <button type="button" data-vue="semaine">Semaine</button>
       </div>
       <div class="semaine" aria-hidden="true"><span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span></div>
       <div class="grille" data-grille></div>
     </section>
 
     <aside class="cote" aria-label="Le jour choisi">
+      <section class="carte rapide">
+        <form data-rapide>
+          <input name="phrase" maxlength="200" placeholder="Dentiste jeudi à 14h30" aria-label="Écrire ou dicter un événement" autocomplete="off">
+          <button type="button" class="micro" data-micro aria-label="Dicter" title="Dicter" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+          <button type="submit" class="envoi" aria-label="Ajouter">+</button>
+        </form>
+        <p class="aide-rapide" data-rapide-aide>Écrivez ou dictez, Lux range tout seul.</p>
+      </section>
+
       <section class="carte jour">
         <h2 data-jour-titre></h2>
-        <p class="ferie-nom" data-jour-ferie hidden></p>
+        <div class="pilules">
+          <p class="ferie-nom" data-jour-ferie hidden></p>
+          <p class="vacances-nom" data-jour-vacances hidden></p>
+        </div>
         <div class="bulle"><span class="bulle-lux" data-lux-bulle></span><p data-jour-phrase aria-live="polite"></p></div>
         <div data-jour-evenements></div>
         <button type="button" class="bouton-plein" data-ajouter>+ Ajouter à ce jour</button>
@@ -78,14 +97,31 @@
       <label class="champ"><span>Heure</span><input name="heure" type="time"></label>
     </div>
     <fieldset class="stickers"><legend>Sticker</legend><div data-stickers></div></fieldset>
-    <label class="champ"><span>Revient</span>
-      <select name="repete">
-        <option value="non">Une seule fois</option>
-        <option value="semaine">Chaque semaine</option>
-        <option value="mois">Chaque mois</option>
-        <option value="an">Chaque année</option>
-      </select>
-    </label>
+    <label class="champ" data-champ-naissance hidden><span>Année de naissance <small>(pour afficher l’âge)</small></span><input name="naissance" type="number" min="1900" max="2100" inputmode="numeric" placeholder="2019"></label>
+    <div class="deux">
+      <label class="champ"><span>Revient</span>
+        <select name="repete">
+          <option value="non">Une seule fois</option>
+          <option value="semaine">Chaque semaine</option>
+          <option value="mois">Chaque mois</option>
+          <option value="an">Chaque année</option>
+        </select>
+      </label>
+      <label class="champ"><span>Me rappeler</span>
+        <select name="rappel">
+          <option value="">Pas de rappel</option>
+          <option value="0">Le moment venu</option>
+          <option value="15">15 min avant</option>
+          <option value="30">30 min avant</option>
+          <option value="60">1 h avant</option>
+          <option value="120">2 h avant</option>
+          <option value="1440">La veille</option>
+          <option value="2880">2 jours avant</option>
+          <option value="10080">1 semaine avant</option>
+        </select>
+      </label>
+    </div>
+    <label class="coche"><input type="checkbox" name="decompte"><span>Compte à rebours en haut de l’appli</span></label>
     <label class="champ"><span>Note <small>(facultatif)</small></span><textarea name="note" rows="2" maxlength="400"></textarea></label>
     <div class="fenetre-actions">
       <button type="submit" class="bouton-plein" value="ok">Enregistrer</button>
@@ -95,19 +131,48 @@
   </form>
 </dialog>
 
+<dialog class="fenetre" data-fenetre-recherche aria-labelledby="titre-recherche">
+  <h2 id="titre-recherche">Chercher</h2>
+  <input class="recherche" type="search" data-recherche placeholder="Dentiste, Léa, pain…" aria-label="Chercher un événement ou une chose à faire" autocomplete="off">
+  <ul class="resultats" data-resultats></ul>
+  <div class="fenetre-actions"><button type="button" class="bouton-doux" data-fermer>Fermer</button></div>
+</dialog>
+
 <dialog class="fenetre" data-fenetre-plus aria-labelledby="titre-plus">
-  <h2 id="titre-plus">Sauvegarde et options</h2>
+  <h2 id="titre-plus">Options et sauvegarde</h2>
+
+  <h3>Rappels sur cet appareil</h3>
+  <p class="aide" data-rappels-etat></p>
+  <div class="liste-actions">
+    <button type="button" class="bouton-doux" data-rappels-activer hidden>Activer les rappels</button>
+    <button type="button" class="bouton-doux" data-rappels-essai hidden>Envoyer un rappel d’essai</button>
+    <button type="button" class="bouton-doux" data-rappels-couper hidden>Couper les rappels</button>
+  </div>
+
+  <h3>Affichage</h3>
+  <label class="champ"><span>Vacances scolaires</span>
+    <select data-zone>
+      <option value="C">Zone C (Montpellier, Toulouse, Paris)</option>
+      <option value="A">Zone A (Lyon, Bordeaux, Grenoble…)</option>
+      <option value="B">Zone B (Marseille, Nice, Lille…)</option>
+      <option value="">Ne pas afficher</option>
+    </select>
+  </label>
+  <div class="liste-actions"><button type="button" class="bouton-doux" data-theme-bouton>Passer en mode nuit</button></div>
+
+  <h3>Sauvegarde</h3>
   <p class="aide">Votre calendrier reste sur cet appareil, dans ce navigateur. Sauvegardez-le de temps en temps pour ne rien perdre.</p>
   <div class="liste-actions">
     <button type="button" class="bouton-doux" data-sauvegarder>Télécharger une sauvegarde</button>
     <label class="bouton-doux bouton-fichier">Restaurer une sauvegarde<input type="file" accept="application/json,.json" data-restaurer></label>
     <button type="button" class="bouton-doux" data-ics>Exporter vers un autre agenda (.ics)</button>
-    <button type="button" class="bouton-doux" data-imprimer>Imprimer ce mois</button>
+    <button type="button" class="bouton-doux" data-imprimer>Imprimer</button>
   </div>
   <div class="fenetre-actions"><button type="button" class="bouton-plein" data-fermer>Fermer</button></div>
 </dialog>
 
-<p class="toast" role="status" aria-live="polite" data-toast></p>
-<script src="app.js?v=2" defer></script>
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+<script src="phrase.js?v=3" defer></script>
+<script src="app.js?v=3" defer></script>
 </body>
 </html>
