@@ -6,10 +6,10 @@
   var calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var LUX = '<svg viewBox="0 0 64 64" aria-hidden="true" width="100%" height="100%">' +
-    '<polygon points="32,7 39.5,23.5 57.5,25.5 44,37.5 47.5,55.5 32,46.5 16.5,55.5 20,37.5 6.5,25.5 24.5,23.5" fill="#ffcf4d" stroke="#ffcf4d" stroke-width="7" stroke-linejoin="round"/>' +
-    '<circle cx="19.5" cy="36" r="3.4" fill="#ff9db8"/><circle cx="44.5" cy="36" r="3.4" fill="#ff9db8"/>' +
-    '<g class="lux-yeux" fill="#2d2a5e"><circle cx="25.5" cy="30.5" r="2.9"/><circle cx="38.5" cy="30.5" r="2.9"/></g>' +
-    '<path d="M28 37c1.4 2.4 6.6 2.4 8 0" fill="none" stroke="#2d2a5e" stroke-width="2.4" stroke-linecap="round"/></svg>';
+    '<polygon points="32,7 39.5,23.5 57.5,25.5 44,37.5 47.5,55.5 32,46.5 16.5,55.5 20,37.5 6.5,25.5 24.5,23.5" fill="#e9bd4c" stroke="#e9bd4c" stroke-width="7" stroke-linejoin="round"/>' +
+    '<circle cx="19.5" cy="36" r="3.4" fill="#eb9c8e"/><circle cx="44.5" cy="36" r="3.4" fill="#eb9c8e"/>' +
+    '<g class="lux-yeux" fill="#2f3319"><circle cx="25.5" cy="30.5" r="2.9"/><circle cx="38.5" cy="30.5" r="2.9"/></g>' +
+    '<path d="M28 37c1.4 2.4 6.6 2.4 8 0" fill="none" stroke="#2f3319" stroke-width="2.4" stroke-linecap="round"/></svg>';
 
   var STICKERS = [
     { e: '⭐', n: 'Autre' }, { e: '🎂', n: 'Anniv.' }, { e: '🩺', n: 'Santé' }, { e: '💼', n: 'Travail' }, { e: '🎉', n: 'Fête' },
@@ -95,10 +95,8 @@
   var grille = $('[data-grille]');
   var luxEl = document.createElement('div');
   luxEl.className = 'lux'; luxEl.innerHTML = LUX;
-  var saisonDe = function (m) { return m < 2 || m === 11 ? 'hiver' : m < 5 ? 'printemps' : m < 8 ? 'ete' : 'automne'; };
 
   function dessinerMois(sautille) {
-    document.body.setAttribute('data-saison', saisonDe(vue.m));
     $('[data-titre-mois]').textContent = MOIS[vue.m];
     $('[data-titre-annee]').textContent = vue.a;
     var auj = aujourdhui();
@@ -332,9 +330,8 @@
 
   /* ---------- le theme ---------- */
   $('[data-theme-bouton]').addEventListener('click', function () {
-    var r = document.documentElement, actuel = r.getAttribute('data-theme');
-    var sombre = actuel ? actuel === 'nuit' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var suivant = sombre ? 'clair' : 'nuit';
+    var r = document.documentElement;
+    var suivant = r.getAttribute('data-theme') === 'nuit' ? 'clair' : 'nuit';
     r.setAttribute('data-theme', suivant);
     try { localStorage.setItem('lux-theme', suivant); } catch (e) {}
   });
