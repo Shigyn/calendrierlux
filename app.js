@@ -608,10 +608,10 @@
         ecrire('lux-rappels', 'oui');
         return synchroniser(true);
       }).then(function () { toast('Rappels activés'); });
-    }).catch(function () {
+    }).catch(function (e) {
       // Rien n'est enregistre cote serveur : ne pas laisser croire que le telephone sonnera.
       ecrire('lux-rappels', null);
-      toast('Activation impossible pour le moment. Réessayez avec internet.');
+      toast(e instanceof TypeError ? 'Activation impossible : le serveur des rappels ne répond pas.' : 'Activation impossible : ' + ((e && e.message) || 'erreur inconnue') + '.');
     }).then(dessinerRappels);
   }
   function dessinerRappels() {

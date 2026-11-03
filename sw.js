@@ -1,7 +1,7 @@
 // Lux : la derniere version quand il y a du reseau, sinon la copie gardee sur l'appareil. Et les rappels.
-const CACHE = 'lux-v3';
+const CACHE = 'lux-v4';
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=3', 'phrase.js?v=3', 'app.js?v=3', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=4', 'phrase.js?v=4', 'app.js?v=4', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', (e) => {
