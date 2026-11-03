@@ -1,0 +1,187 @@
+/* Lux — un petit calendrier. Le ciel en fond, les jours en stickers, et Lux, la petite etoile, qui saute sur le jour choisi. */
+:root {
+  --ciel: #dfe9ff;
+  --nuage: #ffffff;
+  --encre: #2d2a5e;
+  --doux: #6b6897;
+  --trait: #d8def5;
+  --jour: #f5f8ff;
+  --weekend: #edf2ff;
+  --etoile: #ffcf4d;
+  --fraise: #f0528a;
+  --menthe: #8fe3c4;
+  --saison: #cfe0ff;
+  --ombre: 0 10px 28px -14px rgba(45, 42, 94, .35);
+  --rayon: 22px;
+  --titre: 'Baloo 2', 'Trebuchet MS', sans-serif;
+  --corps: 'Varela Round', 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+body[data-saison='printemps'] { --saison: #c4f0dc; }
+body[data-saison='ete'] { --saison: #ffe59a; }
+body[data-saison='automne'] { --saison: #ffd3b0; }
+body[data-saison='hiver'] { --saison: #cfe0ff; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='clair']) {
+    --ciel: #191740; --nuage: #26235a; --encre: #f2f1ff; --doux: #b2b0dd; --trait: #3a3775; --jour: #2e2b66; --weekend: #292660;
+    --ombre: 0 10px 28px -14px rgba(0, 0, 0, .6); color-scheme: dark;
+  }
+  :root:not([data-theme='clair']) body { --saison: #39367c; }
+}
+:root[data-theme='nuit'] {
+  --ciel: #191740; --nuage: #26235a; --encre: #f2f1ff; --doux: #b2b0dd; --trait: #3a3775; --jour: #2e2b66; --weekend: #292660;
+  --ombre: 0 10px 28px -14px rgba(0, 0, 0, .6); color-scheme: dark;
+}
+:root[data-theme='nuit'] body { --saison: #39367c; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; min-height: 100dvh; background: var(--ciel); color: var(--encre); font: 400 16px/1.45 var(--corps); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--fraise); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
+[hidden] { display: none !important; }
+
+.app { max-width: 1180px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); }
+
+/* L'en-tete */
+.tete { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.marque { display: flex; align-items: center; gap: 6px; margin: 0; font: 800 1.55rem/1 var(--titre); }
+.marque span { width: 34px; height: 34px; display: block; }
+.tete-actions { display: flex; align-items: center; gap: 8px; }
+.bouton-rond { width: 42px; height: 42px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--nuage); color: var(--encre); box-shadow: var(--ombre); transition: transform .15s; }
+.bouton-rond:hover { transform: scale(1.07); }
+.bouton-rond svg { width: 20px; height: 20px; fill: currentColor; }
+.bouton-doux { min-height: 42px; padding: 8px 16px; border: 0; border-radius: 999px; background: var(--nuage); color: var(--encre); font-weight: 400; box-shadow: var(--ombre); }
+.bouton-plein { min-height: 46px; padding: 10px 18px; border: 0; border-radius: 16px; background: var(--fraise); color: #fff; font: 700 1.05rem var(--titre); }
+.bouton-plein:hover { filter: brightness(1.06); }
+.bouton-lien { margin-left: auto; padding: 8px 4px; border: 0; background: none; color: var(--fraise); text-decoration: underline; }
+
+/* Les colonnes */
+.colonnes { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .colonnes { grid-template-columns: minmax(0, 1fr); } }
+
+/* Le mois */
+.mois { padding: 12px; border-radius: 28px; background: var(--nuage); box-shadow: var(--ombre); }
+.mois-tete { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px; border-radius: 20px; background: var(--saison); transition: background-color .4s; }
+.mois-tete .bouton-rond { box-shadow: none; }
+.mois-tete h1 { text-align: center; font-size: clamp(1.7rem, 5vw, 2.5rem); font-weight: 800; text-transform: capitalize; }
+.mois-tete small { font-size: .55em; font-weight: 600; opacity: .7; }
+.semaine { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 10px 0 6px; text-align: center; color: var(--doux); font-size: .82rem; }
+
+.grille { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; touch-action: pan-y; }
+.case { position: relative; min-width: 0; min-height: 106px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 6px; overflow: hidden; border: 2px solid transparent; border-radius: 16px; background: var(--jour); color: var(--encre); text-align: left; transition: border-color .15s, background-color .15s; }
+.case:hover { border-color: var(--trait); }
+.case.weekend { background: var(--weekend); }
+.case.dehors { opacity: .42; }
+.case.ferie { background: color-mix(in srgb, var(--menthe) 30%, var(--jour)); }
+.case.choisie { border-color: var(--etoile); background: color-mix(in srgb, var(--etoile) 20%, var(--jour)); }
+.num { font: 700 1.1rem/1.2 var(--titre); }
+.case.aujourdhui .num { display: inline-grid; place-items: center; min-width: 1.6em; height: 1.6em; border-radius: 50%; background: var(--fraise); color: #fff; }
+.pastilles { display: flex; flex-direction: column; gap: 2px; width: 100%; min-width: 0; }
+.pastille { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .76rem; line-height: 1.3; }
+.encore { color: var(--doux); font-size: .72rem; }
+.ferie-mot { color: var(--doux); font-size: .72rem; }
+.tache-point { position: absolute; right: 6px; bottom: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--fraise); }
+@media (max-width: 640px) {
+  .mois { padding: 8px; border-radius: 22px; }
+  .grille, .semaine { gap: 4px; }
+  .case { min-height: 64px; padding: 4px; border-radius: 12px; align-items: center; }
+  .num { font-size: 1rem; }
+  /* Sur telephone : les stickers seuls, sans le texte. */
+  .pastilles { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0; }
+  .pastille { font-size: .78rem; }
+  .pastille-texte, .encore { display: none; }
+}
+
+/* Lux, qui saute de jour en jour */
+.lux { position: absolute; top: 0; left: 0; z-index: 2; width: 38px; height: 38px; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(45, 42, 94, .25)); }
+@media (max-width: 640px) { .lux { width: 25px; height: 25px; } }
+.lux-yeux { animation: cligne 5s infinite; transform-origin: 32px 31px; }
+@keyframes cligne { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+
+/* Le cote */
+.cote { display: grid; gap: 16px; min-width: 0; }
+.carte { padding: 16px; border-radius: var(--rayon); background: var(--nuage); box-shadow: var(--ombre); }
+.carte h2 { font-size: 1.45rem; font-weight: 700; }
+.jour h2::first-letter { text-transform: uppercase; }
+.carte h3 { margin: 18px 0 8px; font-size: 1.15rem; font-weight: 700; }
+.ferie-nom { display: inline-block; margin: 8px 0 0; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--menthe) 45%, var(--nuage)); font-size: .85rem; }
+.bulle { display: flex; align-items: center; gap: 8px; margin: 10px 0 12px; }
+.bulle-lux { width: 40px; height: 40px; flex: none; }
+.bulle p { margin: 0; padding: 8px 12px; border-radius: 4px 14px 14px 14px; background: var(--jour); color: var(--encre); font-size: .95rem; }
+.evenements { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
+.evenement { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 0; border-radius: 14px; background: var(--jour); color: var(--encre); text-align: left; }
+.evenement:hover { background: var(--weekend); }
+.evenement .sticker { flex: none; font-size: 1.35rem; line-height: 1; }
+.evenement b { display: block; font: 600 1.02rem/1.25 var(--titre); overflow-wrap: anywhere; }
+.evenement small { display: block; color: var(--doux); font-size: .82rem; overflow-wrap: anywhere; white-space: pre-line; }
+.jour .bouton-plein { width: 100%; }
+
+.taches { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.taches li { display: flex; align-items: center; gap: 8px; min-height: 38px; }
+.taches label { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; cursor: pointer; overflow-wrap: anywhere; }
+.taches input { flex: none; width: 22px; height: 22px; accent-color: var(--fraise); }
+.taches li.fait span { color: var(--doux); text-decoration: line-through; }
+.tache-suppr { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: none; color: var(--doux); font-size: 1.1rem; }
+.tache-suppr:hover { background: var(--jour); }
+.tache-ajout { display: flex; gap: 6px; margin-top: 8px; }
+.tache-ajout input { flex: 1; min-width: 0; min-height: 42px; padding: 8px 12px; border: 2px solid var(--trait); border-radius: 12px; background: var(--nuage); }
+.tache-ajout button { width: 42px; flex: none; border: 0; border-radius: 12px; background: var(--saison); font: 700 1.3rem var(--titre); }
+
+.bientot ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 2px; }
+.bientot button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 6px; border: 0; border-radius: 12px; background: none; color: var(--encre); text-align: left; }
+.bientot button:hover { background: var(--jour); }
+.bientot .sticker { flex: none; font-size: 1.2rem; }
+.bientot .quoi { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bientot .dans { flex: none; color: var(--doux); font-size: .85rem; }
+.bientot .vide { margin: 10px 0 0; color: var(--doux); }
+
+/* Les fenetres */
+.fenetre { width: min(460px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 20px; border: 0; border-radius: 24px; background: var(--nuage); color: var(--encre); box-shadow: 0 24px 60px -20px rgba(20, 18, 60, .6); }
+.fenetre::backdrop { background: rgba(35, 32, 90, .45); }
+.fenetre h2 { margin-bottom: 12px; font-size: 1.5rem; font-weight: 700; }
+.champ { display: grid; gap: 4px; margin-bottom: 12px; }
+.champ small { color: var(--doux); }
+.champ input, .champ select, .champ textarea { width: 100%; min-height: 44px; padding: 8px 12px; border: 2px solid var(--trait); border-radius: 12px; background: var(--nuage); }
+.deux { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 10px; }
+.deux .champ { min-width: 0; }
+.deux input { min-width: 0; }
+.stickers { margin: 0 0 12px; padding: 0; border: 0; }
+.stickers legend { padding: 0; margin-bottom: 4px; }
+.stickers div { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.stickers label { display: grid; justify-items: center; gap: 1px; padding: 6px 2px; border: 2px solid var(--trait); border-radius: 12px; cursor: pointer; font-size: .68rem; color: var(--doux); text-align: center; }
+.stickers label span:first-of-type { font-size: 1.35rem; line-height: 1.2; }
+.stickers input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.stickers label:has(input:checked) { border-color: var(--fraise); background: color-mix(in srgb, var(--fraise) 10%, var(--nuage)); color: var(--encre); }
+.stickers label:has(input:focus-visible) { outline: 3px solid var(--fraise); outline-offset: 2px; }
+.fenetre-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.fenetre .bouton-doux { box-shadow: none; background: var(--jour); }
+.aide { margin: 0 0 14px; color: var(--doux); }
+.liste-actions { display: grid; gap: 8px; margin-bottom: 14px; }
+.liste-actions .bouton-doux { text-align: center; }
+.bouton-fichier { display: block; cursor: pointer; padding-top: 10px; }
+.bouton-fichier input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.bouton-fichier:focus-within { outline: 3px solid var(--fraise); outline-offset: 2px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 5; max-width: calc(100% - 32px); margin: 0; padding: 10px 18px; border-radius: 999px; background: var(--encre); color: var(--nuage); opacity: 0; pointer-events: none; transform: translate(-50%, 8px); transition: opacity .2s, transform .2s; }
+.toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Imprimer le mois */
+@media print {
+  @page { size: landscape; margin: 10mm; }
+  :root, body { background: #fff !important; --nuage: #fff; --jour: #fff; --weekend: #f6f6f6; --saison: #fff; --encre: #000; --trait: #bbb; color-scheme: light; }
+  .tete, .cote, .lux, .bouton-rond, .toast { display: none !important; }
+  .colonnes { display: block; }
+  .mois { box-shadow: none; padding: 0; }
+  .case { border: 1px solid #bbb !important; min-height: 92px; opacity: 1; print-color-adjust: exact; align-items: flex-start; }
+  .case.dehors { opacity: .4; }
+  .pastille-texte, .encore { display: inline; }
+  .pastilles { flex-direction: column; justify-content: flex-start; }
+}
