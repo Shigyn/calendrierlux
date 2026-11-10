@@ -972,7 +972,24 @@
   if (reveilDemande && demande && !estArrete(arretes(), { titre: reveilDemande, jour: demande, quand: 0 })) sonner({ titre: reveilDemande, jour: demande, corps: '' });
   verifierReveils();
   if (!memoireOk) toast('Ce navigateur bloque la mémoire : rien ne sera gardé.');
-  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
+  // Mise a jour toute seule, meme depuis l'icone de l'ecran d'accueil : des qu'une nouvelle version est installee, on recharge.
+  // Jamais pendant une saisie ni pendant un reveil : on attend que tout soit ferme, ou le prochain retour sur l'appli.
+  // Les donnees sont deja dans la memoire du telephone a chaque geste : recharger ne perd rien.
+  var majEnAttente = false;
+  function appliquerMaj() {
+    if (document.querySelector('dialog[open]') || reveilEnCours) { majEnAttente = true; return; }
+    location.reload();
+  }
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    var avaitVersion = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', function () { if (avaitVersion) appliquerMaj(); avaitVersion = true; });
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) return;
+      if (majEnAttente) { appliquerMaj(); return; }
+      navigator.serviceWorker.getRegistration().then(function (reg) { if (reg) reg.update(); }).catch(function () {});
+    });
+  }
   if (rappelsOn() && lire('lux-rappels-jour') !== aujourdhui()) synchroniser();
   if (lire('lux-jeton')) sauver(); else if (memoireOk && !reveilEnCours) ouvrirCode();
 })();
