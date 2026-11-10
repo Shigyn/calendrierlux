@@ -91,6 +91,18 @@ h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
   .pastille-texte, .encore { display: none; }
 }
 
+/* Le calendrier petit a l'ouverture : les stickers seuls, sans le texte */
+.mois.compact[data-mode='mois'] .mois-tete h1 { font-size: clamp(1.3rem, 4vw, 1.7rem); }
+.mois.compact[data-mode='mois'] .case { min-height: 60px; cursor: zoom-in; }
+.mois.compact[data-mode='mois'] .pastilles { flex-direction: row; flex-wrap: wrap; gap: 0; }
+.mois.compact[data-mode='mois'] .pastille-texte, .mois.compact[data-mode='mois'] .encore { display: none; }
+@media (max-width: 640px) {
+  .mois.compact[data-mode='mois'] .case { min-height: 40px; padding: 2px; border-radius: 10px; }
+  .mois.compact[data-mode='mois'] .num { font-size: .9rem; }
+  .mois.compact[data-mode='mois'] .pastille { font-size: .62rem; line-height: 1.2; }
+  .mois.compact[data-mode='mois'] .tache-point { right: 3px; bottom: 3px; width: 6px; height: 6px; }
+}
+
 /* Lux, qui saute de jour en jour */
 .lux { position: absolute; top: 0; left: 0; z-index: 2; width: 38px; height: 38px; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(40, 35, 5, .3)); }
 @media (max-width: 640px) { .lux { width: 25px; height: 25px; } }
@@ -178,7 +190,10 @@ h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
 }
 
 /* Mois ou semaine */
-.vue-choix { display: flex; gap: 2px; width: max-content; margin: 2px auto 0; padding: 3px; border-radius: 999px; background: var(--weekend); }
+.mois-options { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 8px; margin: 2px 0 0; }
+.taille { min-height: 36px; padding: 3px 14px; border: 0; border-radius: 999px; background: var(--weekend); color: var(--doux); font-size: .88rem; }
+.mois[data-mode='semaine'] .taille { display: none; }
+.vue-choix { display: flex; gap: 2px; width: max-content; margin: 0; padding: 3px; border-radius: 999px; background: var(--weekend); }
 .vue-choix button { min-height: 30px; padding: 3px 14px; border: 0; border-radius: 999px; background: none; color: var(--doux); font-size: .88rem; }
 .vue-choix button[aria-pressed='true'] { background: var(--jour); color: var(--encre); box-shadow: 0 1px 3px rgba(40, 35, 5, .18); }
 .nom-jour { display: none; color: var(--doux); font-size: .82rem; }
@@ -241,6 +256,24 @@ h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
 .fenetre .liste-actions:has(> :not([hidden])) { margin-bottom: 8px; }
 .coche { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
 .coche input { flex: none; width: 22px; height: 22px; accent-color: var(--mousse); }
+
+/* Le reveil */
+.reveil { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 24px 20px calc(40px + env(safe-area-inset-bottom)); background: radial-gradient(circle at 50% 30%, #4a5524, var(--velours) 70%); color: #f8f3e6; text-align: center; }
+.reveil[open] { display: flex; }
+.reveil::backdrop { background: var(--velours); }
+body.sonne { overflow: hidden; }
+.reveil-lux { width: 120px; height: 120px; margin-bottom: 8px; filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .35)); animation: tremble .5s ease-in-out infinite; }
+@keyframes tremble { 0%, 100% { transform: rotate(-9deg) translateY(0); } 50% { transform: rotate(9deg) translateY(-6px); } }
+.reveil-heure { margin: 0; font: 800 clamp(3.4rem, 18vw, 5.5rem)/1 var(--titre); letter-spacing: .02em; }
+.reveil h2 { max-width: 22ch; margin: 6px 0 0; font: 700 1.6rem/1.2 var(--titre); text-wrap: balance; overflow-wrap: anywhere; }
+.reveil-quand { margin: 0 0 34px; color: #d9d3b8; }
+.glissiere { position: relative; width: min(320px, 100%); height: 68px; padding: 4px; border-radius: 999px; background: rgba(248, 243, 230, .16); }
+.glissiere-texte { position: absolute; inset: 0; display: grid; place-items: center; padding-left: 52px; color: #f8f3e6; font-weight: 600; letter-spacing: .02em; pointer-events: none; animation: luit 2s ease-in-out infinite; }
+@keyframes luit { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.glissiere-bouton { position: relative; z-index: 1; display: grid; place-items: center; width: 60px; height: 60px; border: 0; border-radius: 50%; background: var(--etoile); color: var(--velours); touch-action: none; cursor: grab; transition: transform .25s; }
+.glissiere-bouton.tire { transition: none; cursor: grabbing; }
+.glissiere-bouton svg { width: 28px; height: 28px; }
+.glissiere-bouton:focus-visible { outline: 3px solid #f8f3e6; outline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

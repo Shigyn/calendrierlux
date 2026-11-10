@@ -26,9 +26,12 @@
     '<ellipse cx="32" cy="18.8" rx="15.8" ry="7" fill="url(#lux-c)" stroke="#123f05" stroke-width=".8"/></svg>';
 
   var STICKERS = [
-    { e: '🪲', n: 'Autre' }, { e: '🎂', n: 'Anniv.' }, { e: '🩺', n: 'Santé' }, { e: '💼', n: 'Travail' }, { e: '🎉', n: 'Fête' },
-    { e: '✈️', n: 'Voyage' }, { e: '🏠', n: 'Maison' }, { e: '💗', n: 'Amour' }, { e: '🍽️', n: 'Repas' }, { e: '🏃', n: 'Sport' },
+    { e: '🪲', n: 'Autre' }, { e: '🎂', n: 'Anniv.' }, { e: '🩺', n: 'Santé' }, { e: '💼', n: 'Travail' }, { e: '🥂', n: 'Fête' },
+    { e: '🌴', n: 'Voyage' }, { e: '🏠', n: 'Maison' }, { e: '🤍', n: 'Amour' }, { e: '🍽️', n: 'Repas' }, { e: '🎾', n: 'Sport' },
   ];
+  // Stickers changes le 10/11 : les evenements deja enregistres gardent l'ancien, on affiche juste le nouveau. Rien n'est reecrit.
+  var NOUVEAU = { '🎉': '🥂', '✈️': '🌴', '✈': '🌴', '💗': '🤍', '🏃': '🎾' };
+  var st = function (ev) { var s = (ev && ev.sticker) || '🪲'; return NOUVEAU[s] || s; };
   var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   var JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
   var REPETE = { semaine: 'chaque semaine', mois: 'chaque mois', an: 'chaque année' };
@@ -191,6 +194,15 @@
 
   /* ---------- le calendrier ---------- */
   var grille = $('[data-grille]');
+  // Petit a chaque ouverture ; on le touche pour l'agrandir, « Réduire » pour revenir.
+  var moisEl = $('[data-mois]'), tailleBtn = $('[data-taille]');
+  function mettreTaille(petit) {
+    moisEl.classList.toggle('compact', petit);
+    tailleBtn.textContent = petit ? 'Agrandir' : 'Réduire';
+    tailleBtn.setAttribute('aria-expanded', String(!petit));
+    luxPos = null; placerLux(false);
+  }
+  tailleBtn.addEventListener('click', function () { mettreTaille(!moisEl.classList.contains('compact')); });
   var luxEl = document.createElement('div');
   luxEl.className = 'lux'; luxEl.innerHTML = LUX;
 
@@ -231,7 +243,7 @@
         (enSemaine ? '<span class="nom-jour">' + JOURS[jour].slice(0, 3) + '</span>' : '') +
         '<span class="num">' + d.getDate() + '</span>' +
         (evs.length || ferie ? '<span class="pastilles">' + (ferie ? '<span class="pastille ferie-mot"><span class="pastille-texte">' + esc(ferie) + '</span></span>' : '') + evs.slice(0, max).map(function (ev) {
-          return '<span class="pastille">' + esc(ev.sticker || '🪲') + ' <span class="pastille-texte">' + (enSemaine && ev.heure ? '<b>' + heureDite(ev.heure) + '</b> ' : '') + esc(titreDe(ev, iso)) + '</span></span>';
+          return '<span class="pastille">' + esc(st(ev)) + ' <span class="pastille-texte">' + (enSemaine && ev.heure ? '<b>' + heureDite(ev.heure) + '</b> ' : '') + esc(titreDe(ev, iso)) + '</span></span>';
         }).join('') + (evs.length > max ? '<span class="encore">+ ' + (evs.length - max) + '</span>' : '') + '</span>' : '') +
         (aFaire ? '<span class="tache-point" aria-hidden="true"></span>' : '') + '</button>';
     }
@@ -284,7 +296,7 @@
     $('[data-jour-phrase]').textContent = phrase(choisi, evs, taches);
     $('[data-jour-evenements]').innerHTML = evs.length ? '<ul class="evenements">' + evs.map(function (ev) {
       var sous = [heureDite(ev.heure), REPETE[ev.repete] || '', ev.rappel !== undefined && ev.rappel !== '' ? '🔔' : ''].filter(Boolean).join(' · ');
-      return '<li><button type="button" class="evenement" data-ouvrir="' + esc(ev.id) + '"><span class="sticker">' + esc(ev.sticker || '🪲') + '</span><span><b>' + esc(titreDe(ev, choisi)) + '</b>' +
+      return '<li><button type="button" class="evenement" data-ouvrir="' + esc(ev.id) + '"><span class="sticker">' + esc(st(ev)) + '</span><span><b>' + esc(titreDe(ev, choisi)) + '</b>' +
         (sous ? '<small>' + esc(sous) + '</small>' : '') + (ev.note ? '<small>' + esc(ev.note) + '</small>' : '') + '</span></button></li>';
     }).join('') + '</ul>' : '';
     $('[data-taches]').innerHTML = taches.map(function (t) {
@@ -307,7 +319,7 @@
     var zoneListe = $('[data-bientot]');
     zoneListe.innerHTML = res.length ? res.map(function (r) {
       var quand = r.dans === 0 ? 'aujourd’hui' : r.dans === 1 ? 'demain' : 'dans ' + r.dans + ' jours';
-      return '<li><button type="button" data-aller="' + r.iso + '"><span class="sticker">' + esc(r.ev.sticker || '🪲') + '</span><span class="quoi">' + esc(titreDe(r.ev, r.iso)) + '</span><span class="dans">' + quand + '</span></button></li>';
+      return '<li><button type="button" data-aller="' + r.iso + '"><span class="sticker">' + esc(st(r.ev)) + '</span><span class="quoi">' + esc(titreDe(r.ev, r.iso)) + '</span><span class="dans">' + quand + '</span></button></li>';
     }).join('') : '<li class="vide">Rien dans les 3 prochains mois.</li>';
   }
 
@@ -370,7 +382,7 @@
     form.decompte.checked = !!(ev && ev.decompte);
     form.naissance.value = ev ? ev.naissance || '' : '';
     form.note.value = ev ? ev.note || '' : '';
-    var s = form.querySelector('input[name="sticker"][value="' + (ev ? ev.sticker : '🪲') + '"]');
+    var s = form.querySelector('input[name="sticker"][value="' + (ev ? st(ev) : '🪲') + '"]');
     if (s) s.checked = true;
     champNaissance.hidden = stickerChoisi() !== '🎂';
     $('[data-supprimer]').hidden = !ev;
@@ -475,7 +487,7 @@
     donnees.evenements.forEach(function (ev) {
       if (sansAccent(ev.titre + ' ' + (ev.note || '')).indexOf(q) < 0) return;
       var iso = prochaineFois(ev) || ev.date;
-      res.push({ sticker: ev.sticker || '🪲', titre: titreDe(ev, iso), iso: iso, heure: ev.heure });
+      res.push({ sticker: st(ev), titre: titreDe(ev, iso), iso: iso, heure: ev.heure });
     });
     Object.keys(donnees.taches).forEach(function (iso) {
       tachesDu(iso).forEach(function (t) {
@@ -506,6 +518,7 @@
   grille.addEventListener('click', function (e) {
     var c = e.target.closest('[data-jour]');
     if (!c) return;
+    if (mode === 'mois' && moisEl.classList.contains('compact')) { mettreTaille(false); choisir(c.getAttribute('data-jour'), false); return; }
     choisir(c.getAttribute('data-jour'), true);
   });
   grille.addEventListener('dblclick', function (e) { if (e.target.closest('[data-jour]')) ouvrirEvenement(); });
@@ -589,8 +602,8 @@
     return Uint8Array.from(brut, function (c) { return c.charCodeAt(0); });
   }
   // Chaque fois a venir sur un an. Sans heure, le rappel sonne a 9 h.
-  function calculerRappels() {
-    var maintenant = Date.now(), auj = aujourdhui(), res = [];
+  function rappelsBase(depuis) {
+    var auj = aujourdhui(), res = [];
     donnees.evenements.forEach(function (ev) {
       if (ev.rappel === undefined || ev.rappel === '') return;
       var avant = +ev.rappel, h = (ev.heure || '09:00').split(':');
@@ -599,13 +612,125 @@
         if (!tombeLe(ev, iso)) continue;
         var d = dateDe(iso); d.setHours(+h[0], +h[1], 0, 0);
         var quand = d.getTime() - avant * 60000;
-        if (quand <= maintenant) continue;
+        if (quand <= depuis) continue;
         var long = dateLongue(iso);
-        res.push({ quand: new Date(quand).toISOString(), titre: (ev.sticker || '🪲') + ' ' + titreDe(ev, iso), corps: long.charAt(0).toUpperCase() + long.slice(1) + (ev.heure ? ' à ' + heureDite(ev.heure) : ''), jour: iso });
+        res.push({ quand: quand, titre: st(ev) + ' ' + titreDe(ev, iso), corps: long.charAt(0).toUpperCase() + long.slice(1) + (ev.heure ? ' à ' + heureDite(ev.heure) : ''), jour: iso });
+      }
+    });
+    return res;
+  }
+  // Comme un reveil : le rappel sonne, puis resonne chaque minute (5 fois en tout) tant qu'on n'a pas glisse pour l'arreter.
+  // Les reveils arretes sont notes a part (lux-reveils-arretes), jamais dans le calendrier.
+  var SONNERIES = 5;
+  var cleReveil = function (titre, jour) { return titre + '|' + jour; };
+  function arretes() { try { return JSON.parse(lire('lux-reveils-arretes') || '{}') || {}; } catch (e) { return {}; } }
+  var estArrete = function (stop, r) { var t = stop[cleReveil(r.titre, r.jour)]; return !!t && r.quand <= t; };
+  function calculerRappels() {
+    var maintenant = Date.now(), stop = arretes(), res = [];
+    rappelsBase(maintenant - SONNERIES * 60000).forEach(function (r) {
+      if (estArrete(stop, r)) return;
+      // Les repetitions seulement sur les 3 prochains jours : la liste envoyee reste courte, elle est refaite chaque jour.
+      var n = r.quand - maintenant < 3 * 86400000 ? SONNERIES : 1;
+      for (var k = 0; k < n; k++) {
+        var q = r.quand + k * 60000;
+        if (q <= maintenant) continue;
+        res.push({ quand: new Date(q).toISOString(), titre: r.titre, corps: k ? 'Ça sonne encore : ouvrez Lux et glissez pour arrêter.' : r.corps, jour: r.jour });
       }
     });
     return res.sort(function (a, b) { return a.quand.localeCompare(b.quand); }).slice(0, 200);
   }
+
+  /* L'ecran du reveil : Lux s'agite, une petite musique tourne, on glisse pour arreter. */
+  var reveilEl = $('[data-reveil]'), bouton = $('[data-glissiere-bouton]'), glissiere = $('[data-glissiere]');
+  var reveilEnCours = null, vus = {}, audio = null, boucleT = null, finT = null;
+  $('[data-reveil-lux]').innerHTML = LUX;
+  reveilEl.addEventListener('cancel', function (e) { e.preventDefault(); }); // Echap ne l'arrete pas : on glisse.
+  // Le navigateur ne laisse jouer un son qu'apres un premier geste : on prepare la musique au premier toucher.
+  document.addEventListener('pointerdown', function () {
+    try { var C = window.AudioContext || window.webkitAudioContext; if (C && !audio) audio = new C(); if (audio && audio.resume) audio.resume(); } catch (e) {}
+  }, { once: true, capture: true });
+  function musique() {
+    if (navigator.vibrate) try { navigator.vibrate([400, 200, 400, 200, 400]); } catch (e) {}
+    if (!audio) return;
+    try {
+      if (audio.resume) audio.resume();
+      var t = audio.currentTime + .05;
+      [784, 988, 1175, 988, 784, 0, 1319, 1175].forEach(function (f, i) {
+        if (!f) return;
+        var o = audio.createOscillator(), g = audio.createGain(), d = t + i * .18;
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0, d); g.gain.linearRampToValueAtTime(.22, d + .02); g.gain.exponentialRampToValueAtTime(.001, d + .17);
+        o.connect(g); g.connect(audio.destination); o.start(d); o.stop(d + .2);
+      });
+    } catch (e) {}
+  }
+  function sonner(r) {
+    if (reveilEnCours) return;
+    reveilEnCours = r;
+    var h = new Date();
+    $('[data-reveil-heure]').textContent = deux(h.getHours()) + ':' + deux(h.getMinutes());
+    $('[data-reveil-titre]').textContent = r.titre;
+    $('[data-reveil-quand]').textContent = r.corps || (r.jour ? dateLongue(r.jour) : '');
+    bouton.style.transform = '';
+    if (!reveilEl.open) reveilEl.showModal(); // Au premier plan, meme par-dessus une fenetre ouverte.
+    document.body.classList.add('sonne');
+    musique(); clearInterval(boucleT); boucleT = setInterval(musique, 2600);
+    clearTimeout(finT); finT = setTimeout(function () { clearInterval(boucleT); }, 10 * 60000); // La musique s'arrete seule au bout de 10 min.
+    bouton.focus();
+  }
+  function arreter() {
+    var r = reveilEnCours;
+    if (!r) return;
+    reveilEnCours = null;
+    clearInterval(boucleT); clearTimeout(finT);
+    if (navigator.vibrate) try { navigator.vibrate(0); } catch (e) {}
+    if (reveilEl.open) reveilEl.close();
+    document.body.classList.remove('sonne');
+    var stop = arretes(), cle = cleReveil(r.titre, r.jour), avant = Date.now() - 2 * 86400000;
+    Object.keys(stop).forEach(function (k) { if (stop[k] < avant) delete stop[k]; });
+    stop[cle] = Date.now();
+    ecrire('lux-reveils-arretes', JSON.stringify(stop));
+    // Les notifications deja affichees partent, et le serveur oublie les sonneries suivantes.
+    if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistration().then(function (reg) {
+      return reg && reg.getNotifications().then(function (l) { l.forEach(function (n) { var d = n.data || {}; if (cleReveil(d.titre, d.jour) === cle) n.close(); }); });
+    }).catch(function () {});
+    synchroniser();
+    toast('Réveil arrêté');
+  }
+  // Pendant que l'appli est ouverte, c'est elle qui sonne a l'heure.
+  function verifierReveils() {
+    if (document.hidden || reveilEnCours) return;
+    var maintenant = Date.now(), stop = arretes();
+    rappelsBase(maintenant - SONNERIES * 60000).some(function (r) {
+      var v = cleReveil(r.titre, r.jour) + '@' + r.quand;
+      if (r.quand > maintenant || vus[v] || estArrete(stop, r)) return false;
+      vus[v] = true; sonner(r); return true;
+    });
+  }
+  setInterval(verifierReveils, 15000);
+  // Glisser le bouton jusqu'au bout pour arreter ; au clavier, Entree suffit.
+  var tire = null;
+  bouton.addEventListener('pointerdown', function (e) {
+    tire = { x: e.clientX, max: glissiere.clientWidth - bouton.offsetWidth - 8 };
+    bouton.setPointerCapture(e.pointerId);
+    bouton.classList.add('tire');
+  });
+  bouton.addEventListener('pointermove', function (e) {
+    if (!tire) return;
+    var dx = Math.max(0, Math.min(tire.max, e.clientX - tire.x));
+    bouton.style.transform = 'translateX(' + dx + 'px)';
+    tire.dx = dx;
+  });
+  function lacher() {
+    if (!tire) return;
+    var fini = (tire.dx || 0) > tire.max * .8;
+    tire = null;
+    bouton.classList.remove('tire');
+    if (fini) arreter(); else bouton.style.transform = '';
+  }
+  bouton.addEventListener('pointerup', lacher);
+  bouton.addEventListener('pointercancel', lacher);
+  bouton.addEventListener('click', function (e) { if (e.detail === 0) arreter(); });
   function appeler(corps) {
     return fetch(URL_RAPPELS, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corps) })
       .then(function (r) {
@@ -830,6 +955,7 @@
     if (document.hidden) return;
     // De retour sur l'appli : on recupere ce qui a change ailleurs, sans jamais interroger en boucle.
     if (Date.now() - derniere > 15000) sauver();
+    verifierReveils();
     if (jourOuvert === aujourdhui()) return;
     jourOuvert = aujourdhui(); reporterTaches(); choisi = jourOuvert; tout(false);
     synchroniser();
@@ -838,11 +964,15 @@
 
   reporterTaches();
   // Ouvert depuis un rappel : directement sur le bon jour.
-  var demande = new URLSearchParams(location.search).get('jour');
+  var params = new URLSearchParams(location.search), demande = params.get('jour'), reveilDemande = params.get('reveil');
   if (demande && /^\d{4}-\d{2}-\d{2}$/.test(demande)) { choisi = demande; history.replaceState(null, '', location.pathname); }
   tout(false);
+  mettreTaille(true);
+  // Ouvert en touchant la notification d'un reveil : l'ecran du reveil, pour l'arreter.
+  if (reveilDemande && demande && !estArrete(arretes(), { titre: reveilDemande, jour: demande, quand: 0 })) sonner({ titre: reveilDemande, jour: demande, corps: '' });
+  verifierReveils();
   if (!memoireOk) toast('Ce navigateur bloque la mémoire : rien ne sera gardé.');
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
   if (rappelsOn() && lire('lux-rappels-jour') !== aujourdhui()) synchroniser();
-  if (lire('lux-jeton')) sauver(); else if (memoireOk) ouvrirCode();
+  if (lire('lux-jeton')) sauver(); else if (memoireOk && !reveilEnCours) ouvrirCode();
 })();

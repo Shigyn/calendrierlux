@@ -13,11 +13,11 @@
     [/dentiste|docteur|m[eé]decin|kin[eé]|ost[eé]o|h[oô]pital|radio|vaccin|ophtalmo|gyn[eé]co|p[eé]diatre|sant[eé]|pharmacie/, '🩺'],
     [/r[eé]union|travail|boulot|client|entretien|bureau|rendez-vous pro/, '💼'],
     [/resto|restaurant|d[iî]ner|d[eé]jeuner|repas|brunch|barbecue/, '🍽️'],
-    [/piscine|sport|foot|gym|yoga|course|muscu|tennis|danse|rando|judo|natation/, '🏃'],
-    [/voyage|vacances|avion|train|vol\b|week-?end|valise|a[eé]roport/, '✈️'],
-    [/f[eê]te|soir[eé]e|ap[eé]ro|mariage|bapt[eê]me|concert/, '🎉'],
+    [/piscine|sport|foot|gym|yoga|course|muscu|tennis|danse|rando|judo|natation/, '🎾'],
+    [/voyage|vacances|avion|train|vol\b|week-?end|valise|a[eé]roport/, '🌴'],
+    [/f[eê]te|soir[eé]e|ap[eé]ro|mariage|bapt[eê]me|concert/, '🥂'],
     [/maison|m[eé]nage|loyer|plombier|facture|courses|garagiste|voiture|contr[oô]le technique/, '🏠'],
-    [/amour|chéri|cheri|saint-valentin|en amoureux/, '💗'],
+    [/amour|chéri|cheri|saint-valentin|en amoureux/, '🤍'],
   ];
 
   var deux = function (n) { return (n < 10 ? '0' : '') + n; };

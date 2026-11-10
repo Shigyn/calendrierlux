@@ -1,7 +1,7 @@
 // Lux : la copie gardee sur l'appareil tout de suite, pour une ouverture instantanee, et la mise a jour en coulisses. Et les rappels.
-const CACHE = 'lux-v5';
+const CACHE = 'lux-v6';
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=5', 'phrase.js?v=5', 'app.js?v=5', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=6', 'phrase.js?v=6', 'app.js?v=6', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', (e) => {
@@ -25,17 +25,16 @@ self.addEventListener('fetch', (e) => {
 self.addEventListener('push', (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { /* message illisible : on affiche quand meme */ }
-  e.waitUntil(self.registration.showNotification(d.titre || 'Lux', {
-    body: d.corps || '',
-    icon: 'icone-192.png',
-    badge: 'icone-192.png',
-    data: { jour: d.jour || '' },
-  }));
+  const options = { body: d.corps || '', icon: 'icone-192.png', badge: 'icone-192.png', data: { jour: d.jour || '', titre: d.titre || '' } };
+  // Un rappel d'evenement sonne comme un reveil : il reste a l'ecran, vibre, et chaque nouvelle sonnerie remplace la precedente en resonnant.
+  if (d.jour) Object.assign(options, { tag: 'lux|' + d.titre + '|' + d.jour, renotify: true, requireInteraction: true, vibrate: [500, 200, 500, 200, 500] });
+  e.waitUntil(self.registration.showNotification(d.titre || 'Lux', options));
 });
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
-  const jour = (e.notification.data || {}).jour;
-  const url = new URL(jour ? './?jour=' + jour : './', self.registration.scope).href;
+  const { jour, titre } = e.notification.data || {};
+  // Toucher la notification ouvre l'ecran du reveil, pour glisser et l'arreter.
+  const url = new URL(jour ? './?jour=' + jour + (titre ? '&reveil=' + encodeURIComponent(titre) : '') : './', self.registration.scope).href;
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((fen) => {
     if (fen.length) return fen[0].navigate(url).then((c) => (c || fen[0]).focus()).catch(() => self.clients.openWindow(url));
     return self.clients.openWindow(url);

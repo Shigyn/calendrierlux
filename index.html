@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Varela+Round&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 <script>
   // Le theme avant l'affichage, pour ne pas clignoter.
   try { var t = localStorage.getItem('lux-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
@@ -42,9 +42,12 @@
         <h1 aria-live="polite"><span data-titre-mois></span> <small data-titre-annee></small></h1>
         <button type="button" class="bouton-rond" data-suivant aria-label="Suivant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <div class="vue-choix" role="group" aria-label="Affichage">
-        <button type="button" data-vue="mois">Mois</button>
-        <button type="button" data-vue="semaine">Semaine</button>
+      <div class="mois-options">
+        <div class="vue-choix" role="group" aria-label="Affichage">
+          <button type="button" data-vue="mois">Mois</button>
+          <button type="button" data-vue="semaine">Semaine</button>
+        </div>
+        <button type="button" class="taille" data-taille aria-expanded="false">Agrandir</button>
       </div>
       <div class="semaine" aria-hidden="true"><span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span></div>
       <div class="grille" data-grille></div>
@@ -187,8 +190,19 @@
   <div class="fenetre-actions"><button type="button" class="bouton-plein" data-fermer>Fermer</button></div>
 </dialog>
 
+<dialog class="reveil" data-reveil role="alertdialog" aria-labelledby="reveil-titre">
+  <div class="reveil-lux" data-reveil-lux></div>
+  <p class="reveil-heure" data-reveil-heure></p>
+  <h2 id="reveil-titre" data-reveil-titre></h2>
+  <p class="reveil-quand" data-reveil-quand></p>
+  <div class="glissiere" data-glissiere>
+    <span class="glissiere-texte">Glisser pour arrêter</span>
+    <button type="button" class="glissiere-bouton" data-glissiere-bouton aria-label="Arrêter le réveil (glisser, ou Entrée)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5l7 7-7 7M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</dialog>
+
 <div class="toast" role="status" aria-live="polite" data-toast></div>
-<script src="phrase.js?v=5" defer></script>
-<script src="app.js?v=5" defer></script>
+<script src="phrase.js?v=6" defer></script>
+<script src="app.js?v=6" defer></script>
 </body>
 </html>
