@@ -194,15 +194,16 @@
 
   /* ---------- le calendrier ---------- */
   var grille = $('[data-grille]');
-  // Petit a chaque ouverture ; on le touche pour l'agrandir, « Réduire » pour revenir.
+  // A chaque ouverture : seulement la semaine du jour choisi ; toucher un jour ouvre tout le mois, « Réduire » pour revenir.
   var moisEl = $('[data-mois]'), tailleBtn = $('[data-taille]');
   function mettreTaille(petit) {
     moisEl.classList.toggle('compact', petit);
-    tailleBtn.textContent = petit ? 'Agrandir' : 'Réduire';
+    tailleBtn.textContent = petit ? 'Tout le mois' : 'Réduire';
     tailleBtn.setAttribute('aria-expanded', String(!petit));
-    luxPos = null; placerLux(false);
+    luxPos = null; dessinerMois(false);
   }
   tailleBtn.addEventListener('click', function () { mettreTaille(!moisEl.classList.contains('compact')); });
+  var unesemaine = function () { return mode === 'mois' && moisEl.classList.contains('compact'); };
   var luxEl = document.createElement('div');
   luxEl.className = 'lux'; luxEl.innerHTML = LUX;
 
@@ -232,6 +233,7 @@
       var ferie = ferieDe(iso), vac = vacancesDe(iso);
       var cls = ['case'];
       if (!enSemaine && d.getMonth() !== m) cls.push('dehors');
+      if (!enSemaine && lundiDe(iso) !== lundiDe(choisi)) cls.push('autre-semaine');
       if (jour === 0 || jour === 6) cls.push('weekend');
       if (ferie) cls.push('ferie');
       if (vac) cls.push('vacances');
@@ -342,7 +344,7 @@
 
   function choisir(iso, sautille) {
     choisi = iso;
-    if (periode() !== periodeVue) { luxPos = null; dessinerMois(false); } else {
+    if (periode() !== periodeVue || unesemaine()) { luxPos = null; dessinerMois(false); } else {
       grille.querySelectorAll('.case').forEach(function (c) {
         var oui = c.getAttribute('data-jour') === iso;
         c.classList.toggle('choisie', oui);
@@ -353,7 +355,7 @@
     dessinerJour();
   }
   function changerPeriode(n) {
-    if (mode === 'semaine') { choisir(ajoute(choisi, n * 7), false); return; }
+    if (mode === 'semaine' || unesemaine()) { choisir(ajoute(choisi, n * 7), false); return; }
     var d = new Date(+choisi.slice(0, 4), +choisi.slice(5, 7) - 1 + n, 1, 12);
     var a = d.getFullYear(), m = d.getMonth();
     var auj = aujourdhui(), jour = +choisi.slice(8, 10);

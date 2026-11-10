@@ -91,17 +91,11 @@ h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
   .pastille-texte, .encore { display: none; }
 }
 
-/* Le calendrier petit a l'ouverture : les stickers seuls, sans le texte */
+/* A l'ouverture : la semaine du jour choisi seulement ; toucher un jour ouvre le mois */
 .mois.compact[data-mode='mois'] .mois-tete h1 { font-size: clamp(1.3rem, 4vw, 1.7rem); }
-.mois.compact[data-mode='mois'] .case { min-height: 60px; cursor: zoom-in; }
-.mois.compact[data-mode='mois'] .pastilles { flex-direction: row; flex-wrap: wrap; gap: 0; }
-.mois.compact[data-mode='mois'] .pastille-texte, .mois.compact[data-mode='mois'] .encore { display: none; }
-@media (max-width: 640px) {
-  .mois.compact[data-mode='mois'] .case { min-height: 40px; padding: 2px; border-radius: 10px; }
-  .mois.compact[data-mode='mois'] .num { font-size: .9rem; }
-  .mois.compact[data-mode='mois'] .pastille { font-size: .62rem; line-height: 1.2; }
-  .mois.compact[data-mode='mois'] .tache-point { right: 3px; bottom: 3px; width: 6px; height: 6px; }
-}
+.mois.compact[data-mode='mois'] .case { cursor: zoom-in; }
+.mois.compact[data-mode='mois'] .case.autre-semaine { display: none; }
+.mois.compact[data-mode='mois'] .case.dehors { opacity: 1; }
 
 /* Lux, qui saute de jour en jour */
 .lux { position: absolute; top: 0; left: 0; z-index: 2; width: 38px; height: 38px; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(40, 35, 5, .3)); }

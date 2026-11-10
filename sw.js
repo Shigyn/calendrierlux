@@ -1,7 +1,7 @@
 // Lux : la copie gardee sur l'appareil tout de suite, pour une ouverture instantanee, et la mise a jour en coulisses. Et les rappels.
-const CACHE = 'lux-v7';
+const CACHE = 'lux-v8';
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=7', 'phrase.js?v=7', 'app.js?v=7', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', 'index.html', 'style.css?v=8', 'phrase.js?v=8', 'app.js?v=8', 'fond-libellules.jpg', 'manifest.webmanifest', 'icone-192.png', 'icone-512.png'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', (e) => {

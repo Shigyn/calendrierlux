@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Varela+Round&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 <script>
   // Le theme avant l'affichage, pour ne pas clignoter.
   try { var t = localStorage.getItem('lux-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
@@ -47,7 +47,7 @@
           <button type="button" data-vue="mois">Mois</button>
           <button type="button" data-vue="semaine">Semaine</button>
         </div>
-        <button type="button" class="taille" data-taille aria-expanded="false">Agrandir</button>
+        <button type="button" class="taille" data-taille aria-expanded="false">Tout le mois</button>
       </div>
       <div class="semaine" aria-hidden="true"><span>lun</span><span>mar</span><span>mer</span><span>jeu</span><span>ven</span><span>sam</span><span>dim</span></div>
       <div class="grille" data-grille></div>
@@ -202,7 +202,7 @@
 </dialog>
 
 <div class="toast" role="status" aria-live="polite" data-toast></div>
-<script src="phrase.js?v=7" defer></script>
-<script src="app.js?v=7" defer></script>
+<script src="phrase.js?v=8" defer></script>
+<script src="app.js?v=8" defer></script>
 </body>
 </html>
